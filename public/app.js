@@ -74,8 +74,12 @@ async function apiFetch(url, options = {}) {
     ...options,
   });
   if (res.status === 204) return null;
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Request failed');
+  const contentType = res.headers.get('content-type');
+  const isJson = contentType && contentType.indexOf('application/json') !== -1;
+  const data = isJson ? await res.json() : null;
+  if (!res.ok) {
+    throw new Error((data && data.error) || 'Request failed with status ' + res.status);
+  }
   return data;
 }
 
