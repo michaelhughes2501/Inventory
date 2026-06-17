@@ -556,9 +556,9 @@ function bindEvents() {
 // ---- Init -------------------------------------------
 
 async function init() {
+  bindEvents();
   try {
     await Promise.all([loadCategories(), loadItems()]);
-    bindEvents();
     showView('dashboard');
   } catch (err) {
     toast('Failed to load data. Is the server running?', 'error');
