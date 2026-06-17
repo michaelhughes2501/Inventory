@@ -25,7 +25,13 @@ app.use(
   })
 );
 
-// Rate limiting
+// Static files (before rate limiter so assets are never counted against the limit)
+app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1h' }));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+// Rate limiting (applies to API routes only)
 const limiter = rateLimit({
   windowMs: 60 * 1000,
   limit: 100,
@@ -34,11 +40,6 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-
-// Static files
-app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1h' }));
 
 // ---- In-memory data store ----
 

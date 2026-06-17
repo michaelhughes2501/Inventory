@@ -128,7 +128,28 @@ function renderDashboard() {
     els.lowStockBody.innerHTML = '<tr><td colspan="5" class="table-empty">No low-stock items. All good!</td></tr>';
   } else {
     els.lowStockBody.innerHTML = lowStock
-      .map((item) => rowHtml(item, ['name', 'category', 'quantity', 'location', 'actions']))
+      .map((item) => {
+        const low = item.quantity < 5;
+        return `
+          <tr>
+            <td>
+              <div class="item-name">${escHtml(item.name)}</div>
+              ${item.notes ? `<div class="item-notes">${escHtml(item.notes)}</div>` : ''}
+            </td>
+            <td>${categoryBadge(item.category)}</td>
+            <td>
+              <span class="qty-value ${low ? 'qty-low' : ''}">${item.quantity}</span>
+              ${low ? ' <span class="badge badge--low-stock">LOW</span>' : ''}
+            </td>
+            <td style="color:var(--text-muted);">${escHtml(item.location || '')}</td>
+            <td>
+              <div class="action-btns">
+                <button class="btn-icon" onclick="openEditModal(${item.id})" title="Edit">&#9998;</button>
+                <button class="btn-icon btn-icon--danger" onclick="openConfirmDelete(${item.id})" title="Delete">&#128465;</button>
+              </div>
+            </td>
+          </tr>`;
+      })
       .join('');
   }
 
@@ -399,6 +420,9 @@ async function saveItem(e) {
   e.preventDefault();
   if (!validateForm()) return;
 
+  const saveBtn = document.getElementById('saveBtn');
+  if (saveBtn) saveBtn.disabled = true;
+
   const payload = {
     name:     els.fieldName.value.trim(),
     category: els.fieldCategory.value,
@@ -430,6 +454,8 @@ async function saveItem(e) {
     refreshCurrentView();
   } catch (err) {
     toast(err.message || 'Something went wrong.', 'error');
+  } finally {
+    if (saveBtn) saveBtn.disabled = false;
   }
 }
 
