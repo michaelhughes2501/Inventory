@@ -220,7 +220,7 @@ app.get('/api/items', (req, res) => {
     result = result.filter((i) => i.category === category);
   }
 
-  if (search) {
+  if (typeof search === 'string' && search) {
     const q = search.toLowerCase();
     result = result.filter(
       (i) =>
