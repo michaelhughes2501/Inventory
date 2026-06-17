@@ -258,8 +258,8 @@ app.post('/api/items', (req, res) => {
     category,
     quantity: qty,
     unit: String(unit || 'each').trim(),
-    location: (location || '').trim(),
-    notes: (notes || '').trim(),
+    location: String(location || '').trim(),
+    notes: String(notes || '').trim(),
     createdAt: now(),
     updatedAt: now(),
   };
