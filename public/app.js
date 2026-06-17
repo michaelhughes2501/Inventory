@@ -4,6 +4,10 @@
    Community Resource Inventory — Frontend App
    ===================================================== */
 
+// ---- Constants --------------------------------------
+
+const LOW_STOCK_THRESHOLD = 5;
+
 // ---- State ------------------------------------------
 
 const state = {
@@ -114,7 +118,7 @@ function populateCategorySelects() {
 
 function renderDashboard() {
   const { items } = state;
-  const lowStock = items.filter((i) => i.quantity < 5);
+  const lowStock = items.filter((i) => i.quantity < LOW_STOCK_THRESHOLD);
   const totalUnits = items.reduce((s, i) => s + i.quantity, 0);
   const cats = new Set(items.map((i) => i.category)).size;
 
@@ -125,11 +129,13 @@ function renderDashboard() {
 
   // Low-stock table
   if (lowStock.length === 0) {
+    // Safe: all user-supplied content is escaped via escHtml()
     els.lowStockBody.innerHTML = '<tr><td colspan="5" class="table-empty">No low-stock items. All good!</td></tr>';
   } else {
+    // Safe: all user-supplied content is escaped via escHtml()
     els.lowStockBody.innerHTML = lowStock
       .map((item) => {
-        const low = item.quantity < 5;
+        const low = item.quantity < LOW_STOCK_THRESHOLD;
         return `
           <tr>
             <td>
@@ -158,13 +164,14 @@ function renderDashboard() {
     .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
     .slice(0, 5);
 
+  // Safe: all user-supplied content is escaped via escHtml()
   els.recentBody.innerHTML = recent
     .map((item) => recentRowHtml(item))
     .join('');
 }
 
 function recentRowHtml(item) {
-  const low = item.quantity < 5;
+  const low = item.quantity < LOW_STOCK_THRESHOLD;
   return `
     <tr>
       <td>
@@ -193,7 +200,7 @@ function getFilteredSorted() {
   const q = search.toLowerCase();
 
   let result = state.items.filter((i) => {
-    if (lowStock && i.quantity >= 5) return false;
+    if (lowStock && i.quantity >= LOW_STOCK_THRESHOLD) return false;
     if (category && i.category !== category) return false;
     if (q && !i.name.toLowerCase().includes(q) && !(i.notes || '').toLowerCase().includes(q) && !(i.location || '').toLowerCase().includes(q)) return false;
     return true;
@@ -225,15 +232,17 @@ function renderInventory() {
   });
 
   if (rows.length === 0) {
+    // Safe: all user-supplied content is escaped via escHtml()
     els.inventoryBody.innerHTML = '<tr><td colspan="6" class="table-empty">No items match your filters.</td></tr>';
     return;
   }
 
+  // Safe: all user-supplied content is escaped via escHtml()
   els.inventoryBody.innerHTML = rows.map(inventoryRowHtml).join('');
 }
 
 function inventoryRowHtml(item) {
-  const low = item.quantity < 5;
+  const low = item.quantity < LOW_STOCK_THRESHOLD;
   return `
     <tr>
       <td>
@@ -261,8 +270,18 @@ function inventoryRowHtml(item) {
 // ---- Helpers ----------------------------------------
 
 function categoryBadge(cat) {
-  const key = cat.replace(/[^a-zA-Z]/g, '').slice(0, 10);
-  return `<span class="badge badge--${key}">${escHtml(cat)}</span>`;
+  const map = {
+    'Housing Supplies': 'housing',
+    'Food & Hygiene':   'food',
+    'Clothing':         'clothing',
+    'Electronics':      'electronics',
+    'Legal Documents':  'legal',
+    'Employment':       'employment',
+    'Medical':          'medical',
+    'Other':            'other',
+  };
+  const key = map[cat] || 'other';
+  return '<span class="badge badge--' + key + '">' + escHtml(cat) + '</span>';
 }
 
 function escHtml(str) {
@@ -487,7 +506,12 @@ function refreshCurrentView() {
 function toast(message, type = 'info') {
   const t = document.createElement('div');
   t.className = `toast toast--${type}`;
-  t.innerHTML = `<span class="toast-dot"></span><span>${escHtml(message)}</span>`;
+  const dot = document.createElement('span');
+  dot.className = 'toast-dot';
+  const txt = document.createElement('span');
+  txt.textContent = message;
+  t.appendChild(dot);
+  t.appendChild(txt);
   els.toastContainer.appendChild(t);
 
   setTimeout(() => {
