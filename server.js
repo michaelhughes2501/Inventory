@@ -38,7 +38,7 @@ const limiter = rateLimit({
   legacyHeaders: false,
 });
 
-app.use(limiter);
+app.use('/api', limiter);
 
 // ---- In-memory data store ----
 
@@ -257,7 +257,7 @@ app.post('/api/items', (req, res) => {
     name: name.trim(),
     category,
     quantity: qty,
-    unit: (unit || 'each').trim(),
+    unit: String(unit || 'each').trim(),
     location: (location || '').trim(),
     notes: (notes || '').trim(),
     createdAt: now(),
@@ -314,6 +314,11 @@ app.delete('/api/items/:id', (req, res) => {
   }
   items.splice(idx, 1);
   res.status(204).end();
+});
+
+// 404 for unknown API routes (must come before SPA fallback)
+app.use('/api', (_req, res) => {
+  res.status(404).json({ error: 'not found' });
 });
 
 // SPA fallback
