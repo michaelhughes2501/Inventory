@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from "react";
-import { Search, Plus, Minus, Filter, CornerUpRight, ShoppingCart, HelpCircle, CheckSquare, Square, Truck, Check } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Search, Plus, Minus, Filter, CornerUpRight, ShoppingCart, HelpCircle, CheckSquare, Square, Truck, Check, Camera } from "lucide-react";
 import { Product, Warehouse, Supplier, StockStatus, TransactionType } from "../types";
 import { getAccessToken } from "../lib/firebase";
+import BarcodeScanner from "./BarcodeScanner";
 
 interface ProductsTableProps {
   products: Product[];
@@ -49,6 +50,8 @@ export default function ProductsTable({
   const [bulkTransferQty, setBulkTransferQty] = useState(10);
   const [bulkTransferNote, setBulkTransferNote] = useState("Bulk inter-warehouse transfer");
   const [bulkProcessing, setBulkProcessing] = useState(false);
+
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   const categories = Array.from(new Set(products.map(p => p.category)));
 
@@ -139,6 +142,20 @@ export default function ProductsTable({
     setAdjustNote("");
   };
 
+  const handleBarcodeScanned = (decodedText: string) => {
+    setIsScannerOpen(false);
+    // Find product with this barcode/sku
+    const matched = products.find(p => p.sku === decodedText || p.id === decodedText);
+    if (matched) {
+      setSearch(matched.sku);
+      setAdjustingProductId(matched.id);
+      setAdjustQty(1); // Set to 1 for quick scanning
+      setAdjustNote("Barcode scan adjustment");
+    } else {
+      setSearch(decodedText);
+    }
+  };
+
   return (
     <div id="product-catalog-panel" className="bg-white rounded-xl border border-slate-200/85 shadow-xs overflow-hidden mb-8">
       {/* Search & Filtering Bar */}
@@ -151,16 +168,25 @@ export default function ProductsTable({
 
           <div className="flex flex-wrap items-center gap-3">
             {/* Search string inputs */}
-            <div className="relative">
-              <input
-                id="catalog-search-input"
-                type="text"
-                placeholder="Search SKU, name, profile..."
-                className="w-64 pl-9 pr-4 py-2 text-xs rounded-lg border border-slate-250 focus:outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-550 transition"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
-              <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <input
+                  id="catalog-search-input"
+                  type="text"
+                  placeholder="Search SKU, name, profile..."
+                  className="w-64 pl-9 pr-4 py-2 text-xs rounded-lg border border-slate-250 focus:outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-550 transition"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
+                <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+              </div>
+              <button
+                onClick={() => setIsScannerOpen(true)}
+                title="Scan Barcode"
+                className="p-2 border border-slate-250 rounded-lg bg-white text-slate-500 hover:text-indigo-600 hover:border-indigo-300 transition"
+              >
+                <Camera className="w-4 h-4" />
+              </button>
             </div>
 
             {/* Warehouse Filter */}
@@ -535,6 +561,13 @@ export default function ProductsTable({
           </tbody>
         </table>
       </div>
+      
+      {isScannerOpen && (
+        <BarcodeScanner 
+          onScanSuccess={handleBarcodeScanned}
+          onClose={() => setIsScannerOpen(false)}
+        />
+      )}
     </div>
   );
 }

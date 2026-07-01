@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { getAccessToken } from '../lib/firebase';
-import { Mail, HardDrive, FileSpreadsheet, FormInput, MessageSquare, Loader2, Calendar, Video, Presentation } from 'lucide-react';
+import { Mail, HardDrive, FileSpreadsheet, FormInput, MessageSquare, Loader2, Calendar, Video, Presentation, FileText } from 'lucide-react';
 
 export default function WorkspacePanel() {
   const [loading, setLoading] = useState<Record<string, boolean>>({});
@@ -33,22 +33,22 @@ export default function WorkspacePanel() {
   };
 
   const createDoc = async () => {
-    setStatus('drive', 'Creating document in Drive...', true);
+    setStatus('drive', 'Creating document...', true);
     try {
       const token = await getAccessToken();
-      const res = await fetch('https://www.googleapis.com/drive/v3/files', {
+      const res = await fetch('https://docs.googleapis.com/v1/documents', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          name: `Inventory Report ${new Date().toLocaleDateString()}`,
-          mimeType: 'application/vnd.google-apps.document'
+          title: `Inventory Report ${new Date().toLocaleDateString()}`
         })
       });
       const data = await res.json();
-      setStatus('drive', `Created document! ID: ${data.id}`);
+      if (data.error) throw new Error(data.error.message);
+      setStatus('drive', `Created document! ID: ${data.documentId}`);
     } catch (e: any) {
       setStatus('drive', `Error: ${e.message}`);
     }
@@ -207,11 +207,11 @@ export default function WorkspacePanel() {
           {messages['sheets'] && <p className="text-[10px] text-slate-500 mt-2 truncate">{messages['sheets']}</p>}
         </div>
 
-        {/* Drive */}
+        {/* Docs */}
         <div className="p-4 border border-slate-200 rounded-lg">
           <div className="flex items-center gap-2 mb-3">
-            <HardDrive className="text-blue-500 h-5 w-5" />
-            <span className="font-semibold text-sm">Google Drive</span>
+            <FileText className="text-blue-500 h-5 w-5" />
+            <span className="font-semibold text-sm">Google Docs</span>
           </div>
           <button onClick={createDoc} disabled={loading['drive']} className="w-full mb-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs py-2 rounded font-medium flex items-center justify-center gap-2">
             {loading['drive'] && <Loader2 className="h-3 w-3 animate-spin" />} Create Report Doc
