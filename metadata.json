@@ -1,0 +1,6 @@
+{
+  "name": "Three-Layer Inventory Manager",
+  "description": "A robust three-layered system (Presentation-Application-Data) for managing complex inventory with real-time updates, transactions, analytics, and AI restocking auditing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
