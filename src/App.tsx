@@ -941,7 +941,7 @@ export default function App() {
         )}
 
         {activeTab === "workspace" && (
-          <WorkspacePanel />
+          <WorkspacePanel products={products} auditReport={auditReport} />
         )}
 
       </main>

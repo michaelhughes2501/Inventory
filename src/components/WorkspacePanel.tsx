@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
 import { getAccessToken } from '../lib/firebase';
 import { Mail, HardDrive, FileSpreadsheet, FormInput, MessageSquare, Loader2, Calendar, Video, Presentation, FileText } from 'lucide-react';
+import { Product, AuditReport } from '../types';
 
-export default function WorkspacePanel() {
+interface WorkspacePanelProps {
+  products?: Product[];
+  auditReport?: AuditReport | null;
+}
+
+export default function WorkspacePanel({ products = [], auditReport = null }: WorkspacePanelProps) {
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [messages, setMessages] = useState<Record<string, string>>({});
 
@@ -15,7 +21,9 @@ export default function WorkspacePanel() {
     setStatus('sheets', 'Creating spreadsheet...', true);
     try {
       const token = await getAccessToken();
-      const res = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
+      
+      // First create the spreadsheet
+      const createRes = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -25,8 +33,53 @@ export default function WorkspacePanel() {
           properties: { title: `Inventory Export ${new Date().toLocaleDateString()}` }
         })
       });
-      const data = await res.json();
-      setStatus('sheets', `Created! ID: ${data.spreadsheetId}`);
+      const data = await createRes.json();
+      
+      if (data.error) throw new Error(data.error.message);
+      
+      const spreadsheetId = data.spreadsheetId;
+      setStatus('sheets', 'Formatting data...', true);
+
+      // Prepare data for export
+      const rows: any[][] = [];
+      if (auditReport) {
+        rows.push(['AI Audit Report Summary']);
+        rows.push(['Date:', new Date(auditReport.timestamp).toLocaleString()]);
+        rows.push(['Summary:', auditReport.summary]);
+        rows.push(['Health Score:', auditReport.score]);
+        rows.push(['Savings Insight:', auditReport.savingsInsight]);
+        rows.push([]);
+        
+        rows.push(['Recommendations']);
+        rows.push(['SKU', 'Product', 'Current Level', 'Recommend Order', 'Est. Cost', 'Supplier', 'Urgency', 'Reason']);
+        
+        auditReport.recommendations.forEach(r => {
+          rows.push([r.sku, r.productName, r.currentLevel, r.recommendedOrder, r.estimatedCost, r.supplierName, r.urgency, r.reason]);
+        });
+        
+        rows.push([]);
+      }
+      
+      rows.push(['Inventory Data']);
+      rows.push(['SKU', 'Name', 'Category', 'Current Level', 'Cost', 'Sell Price', 'Status', 'Last Updated']);
+      
+      products.forEach(p => {
+        rows.push([p.sku, p.name, p.category, p.currentLevel, p.cost, p.sellPrice, p.status, p.lastUpdated]);
+      });
+
+      // Update the spreadsheet with the data
+      await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Sheet1!A1:H${rows.length}?valueInputOption=USER_ENTERED`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          values: rows
+        })
+      });
+
+      setStatus('sheets', `Exported to Sheet! ID: ${spreadsheetId}`);
     } catch (e: any) {
       setStatus('sheets', `Error: ${e.message}`);
     }
