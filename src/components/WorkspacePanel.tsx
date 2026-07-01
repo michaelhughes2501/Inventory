@@ -1,18 +1,24 @@
 import React, { useState } from 'react';
 import { getAccessToken } from '../lib/firebase';
 import { Mail, HardDrive, FileSpreadsheet, FormInput, MessageSquare, Loader2, Calendar, Video, Presentation, FileText } from 'lucide-react';
-import { Product, AuditReport } from '../types';
+import { Product, AuditReport, Warehouse } from '../types';
 
 interface WorkspacePanelProps {
   products?: Product[];
   auditReport?: AuditReport | null;
+  warehouses?: Warehouse[];
 }
 
-export default function WorkspacePanel({ products = [], auditReport = null }: WorkspacePanelProps) {
+export default function WorkspacePanel({ products = [], auditReport = null, warehouses = [] }: WorkspacePanelProps) {
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [messages, setMessages] = useState<Record<string, string>>({});
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const [emailAlertsEnabled, setEmailAlertsEnabled] = useState(false);
+  const [exportFilter, setExportFilter] = useState<'ALL' | 'CATEGORY' | 'WAREHOUSE'>('ALL');
+  const [exportFilterValue, setExportFilterValue] = useState<string>('');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const categories = Array.from(new Set(products.map(p => p.category)));
 
   const setStatus = (key: string, msg: string, isLoading: boolean = false) => {
     setMessages(prev => ({ ...prev, [key]: msg }));
@@ -65,7 +71,14 @@ export default function WorkspacePanel({ products = [], auditReport = null }: Wo
       rows.push(['Inventory Data']);
       rows.push(['SKU', 'Name', 'Category', 'Current Level', 'Cost', 'Sell Price', 'Status', 'Last Updated']);
       
-      products.forEach(p => {
+      let filteredProducts = products;
+      if (exportFilter === 'CATEGORY' && exportFilterValue) {
+        filteredProducts = products.filter(p => p.category === exportFilterValue);
+      } else if (exportFilter === 'WAREHOUSE' && exportFilterValue) {
+        filteredProducts = products.filter(p => p.warehouseId === exportFilterValue);
+      }
+
+      filteredProducts.forEach(p => {
         rows.push([p.sku, p.name, p.category, p.currentLevel, p.cost, p.sellPrice, p.status, p.lastUpdated]);
       });
 
@@ -83,6 +96,8 @@ export default function WorkspacePanel({ products = [], auditReport = null }: Wo
 
       setStatus('sheets', `Exported to Sheet! ID: ${spreadsheetId}`);
       setLastSyncTime(new Date());
+      setToastMessage(`Successfully exported ${filteredProducts.length} items to Google Sheets!`);
+      setTimeout(() => setToastMessage(null), 5000);
     } catch (e: any) {
       setStatus('sheets', `Error: ${e.message}`);
     }
@@ -242,7 +257,13 @@ export default function WorkspacePanel({ products = [], auditReport = null }: Wo
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200/85 p-6 shadow-xs mt-8">
+    <div className="bg-white rounded-xl border border-slate-200/85 p-6 shadow-xs mt-8 relative">
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 bg-emerald-500 text-white px-4 py-3 rounded-lg shadow-xl text-sm font-medium z-50 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <FileSpreadsheet className="h-5 w-5" />
+          {toastMessage}
+        </div>
+      )}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-base font-bold text-slate-900">Google Workspace Integrations</h3>
@@ -264,8 +285,49 @@ export default function WorkspacePanel({ products = [], auditReport = null }: Wo
               </span>
             )}
           </div>
+          <div className="mb-3 space-y-2">
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1 block">Filter By</label>
+              <select 
+                className="w-full text-xs rounded border border-slate-300 p-1.5 focus:outline-hidden"
+                value={exportFilter}
+                onChange={(e) => {
+                  setExportFilter(e.target.value as 'ALL' | 'CATEGORY' | 'WAREHOUSE');
+                  setExportFilterValue('');
+                }}
+              >
+                <option value="ALL">All Inventory</option>
+                <option value="CATEGORY">Category</option>
+                <option value="WAREHOUSE">Warehouse</option>
+              </select>
+            </div>
+            {exportFilter === 'CATEGORY' && (
+              <div>
+                <select 
+                  className="w-full text-xs rounded border border-slate-300 p-1.5 focus:outline-hidden"
+                  value={exportFilterValue}
+                  onChange={(e) => setExportFilterValue(e.target.value)}
+                >
+                  <option value="">Select Category</option>
+                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+            )}
+            {exportFilter === 'WAREHOUSE' && (
+              <div>
+                <select 
+                  className="w-full text-xs rounded border border-slate-300 p-1.5 focus:outline-hidden"
+                  value={exportFilterValue}
+                  onChange={(e) => setExportFilterValue(e.target.value)}
+                >
+                  <option value="">Select Warehouse</option>
+                  {warehouses.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+                </select>
+              </div>
+            )}
+          </div>
           <div className="mt-auto space-y-2">
-            <button onClick={createSheet} disabled={loading['sheets']} className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs py-2 rounded font-medium flex items-center justify-center gap-2 transition-colors">
+            <button onClick={createSheet} disabled={loading['sheets'] || (exportFilter !== 'ALL' && !exportFilterValue)} className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs py-2 rounded font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
               {loading['sheets'] && <Loader2 className="h-3 w-3 animate-spin" />} 
               {lastSyncTime ? 'Re-run Last Export' : 'Create Export Sheet'}
             </button>

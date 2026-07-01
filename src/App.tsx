@@ -45,6 +45,8 @@ import TransactionsTrail from "./components/TransactionsTrail";
 import WorkspacePanel from "./components/WorkspacePanel";
 import Chatbot from "./components/Chatbot";
 
+import { QRCodeSVG } from 'qrcode.react';
+
 export default function App() {
   // --- AUTH STATE ---
   const [needsAuth, setNeedsAuth] = useState<boolean>(true);
@@ -78,6 +80,7 @@ export default function App() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState<boolean>(false);
+  const [showQRModal, setShowQRModal] = useState<boolean>(false);
   const [transferTargetProduct, setTransferTargetProduct] = useState<Product | null>(null);
 
   // --- NEW SKU FORM FIELDS ---
@@ -719,6 +722,14 @@ export default function App() {
 
                   <div className="flex gap-2">
                     <button
+                      onClick={() => setShowQRModal(true)}
+                      className="flex-1 bg-white hover:bg-slate-100 border border-slate-300 text-slate-750 font-bold py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1 cursor-pointer transition-all"
+                    >
+                      <Layers className="h-3.5 w-3.5 text-slate-400" />
+                      <span>Print QR Code</span>
+                    </button>
+
+                    <button
                       id="inspector-relocate-btn"
                       onClick={() => openTransferModal(selectedProduct)}
                       className="flex-1 bg-white hover:bg-slate-100 border border-slate-300 text-slate-750 font-bold py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1 cursor-pointer transition-all"
@@ -941,7 +952,7 @@ export default function App() {
         )}
 
         {activeTab === "workspace" && (
-          <WorkspacePanel products={products} auditReport={auditReport} />
+          <WorkspacePanel products={products} auditReport={auditReport} warehouses={warehouses} />
         )}
 
       </main>
@@ -1316,6 +1327,58 @@ export default function App() {
           >
             <X className="h-3.5 w-3.5" />
           </button>
+        </div>
+      )}
+
+      {/* QR CODE MODAL */}
+      {showQRModal && selectedProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in print:bg-white print:backdrop-blur-none">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col print:shadow-none print:border-none">
+            {/* Header */}
+            <div className="bg-slate-50 p-4 border-b border-slate-200 flex justify-between items-center print:hidden">
+              <div>
+                <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+                  <Layers className="h-4 w-4 text-indigo-500" />
+                  Product QR Label
+                </h3>
+              </div>
+              <button 
+                onClick={() => setShowQRModal(false)}
+                className="p-1 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-705 cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 flex flex-col items-center justify-center print:p-0">
+              <div id="print-qr-container" className="bg-white p-4 border-2 border-slate-100 rounded-xl mb-4 print:border-none print:p-0 print:mb-2">
+                <QRCodeSVG value={selectedProduct.sku} size={180} />
+              </div>
+              <div className="text-center">
+                <p className="font-bold text-slate-800 text-sm print:text-black">{selectedProduct.name}</p>
+                <p className="text-xs font-mono text-slate-500 mt-1 print:text-black">{selectedProduct.sku}</p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="pt-4 pb-5 px-6 border-t border-slate-100 flex justify-end gap-2 text-xs print:hidden">
+              <button
+                type="button"
+                onClick={() => setShowQRModal(false)}
+                className="px-4 py-2 font-semibold hover:bg-slate-100 rounded-lg text-slate-500 cursor-pointer"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-5 rounded-lg shadow-sm cursor-pointer"
+              >
+                Print Label
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

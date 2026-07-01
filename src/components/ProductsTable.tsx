@@ -142,22 +142,28 @@ export default function ProductsTable({
     setAdjustNote("");
   };
 
-  const handleBarcodeScanned = (decodedText: string) => {
+  const handleSelectProductBySku = (decodedText: string) => {
     setIsScannerOpen(false);
-    // Find product with this barcode/sku
     const matched = products.find(p => p.sku === decodedText || p.id === decodedText);
     if (matched) {
       setSearch(matched.sku);
-      setAdjustingProductId(matched.id);
-      setAdjustQty(1); // Set to 1 for quick scanning
-      setAdjustNote("Barcode scan adjustment");
+      onSelectProduct(matched);
     } else {
       setSearch(decodedText);
     }
   };
 
   return (
-    <div id="product-catalog-panel" className="bg-white rounded-xl border border-slate-200/85 shadow-xs overflow-hidden mb-8">
+    <div id="product-catalog-panel" className="bg-white rounded-xl border border-slate-200/85 shadow-xs overflow-hidden mb-8 relative">
+      {/* Floating Scan Button */}
+      <button
+        onClick={() => setIsScannerOpen(true)}
+        className="absolute bottom-6 right-6 z-10 bg-indigo-600 text-white rounded-full p-4 shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all flex items-center justify-center gap-2"
+        title="Scan Barcode"
+      >
+        <Camera className="w-6 h-6" />
+      </button>
+
       {/* Search & Filtering Bar */}
       <div className="p-6 border-b border-slate-100 bg-slate-50/50">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -564,7 +570,7 @@ export default function ProductsTable({
       
       {isScannerOpen && (
         <BarcodeScanner 
-          onScanSuccess={handleBarcodeScanned}
+          onScanSuccess={handleSelectProductBySku}
           onClose={() => setIsScannerOpen(false)}
         />
       )}

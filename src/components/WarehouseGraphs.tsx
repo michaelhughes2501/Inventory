@@ -5,7 +5,7 @@
 
 import React from "react";
 import { Database, Home, Info, Archive } from "lucide-react";
-import { Warehouse, InventoryStats, Transaction, Product } from "../types";
+import { Warehouse, InventoryStats, Transaction, Product, TransactionType } from "../types";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts';
 
 interface WarehouseGraphsProps {
@@ -35,9 +35,9 @@ export default function WarehouseGraphs({ warehouses, stats, transactions, produ
   let runningTotal = currentTotal;
 
   sortedTransactions.slice(0, 50).forEach(t => {
-    if (t.type === 'IN' || t.type === 'ADJUST_UP') {
+    if (t.type === TransactionType.RECEIVED || t.type === TransactionType.ADJUSTED) {
       runningTotal -= t.quantity;
-    } else if (t.type === 'OUT' || t.type === 'ADJUST_DOWN') {
+    } else if (t.type === TransactionType.DISPATCHED || t.type === TransactionType.RELOCATED) {
       runningTotal += t.quantity;
     }
     
