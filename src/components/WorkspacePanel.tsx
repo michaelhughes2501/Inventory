@@ -11,6 +11,8 @@ interface WorkspacePanelProps {
 export default function WorkspacePanel({ products = [], auditReport = null }: WorkspacePanelProps) {
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [messages, setMessages] = useState<Record<string, string>>({});
+  const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
+  const [emailAlertsEnabled, setEmailAlertsEnabled] = useState(false);
 
   const setStatus = (key: string, msg: string, isLoading: boolean = false) => {
     setMessages(prev => ({ ...prev, [key]: msg }));
@@ -80,6 +82,7 @@ export default function WorkspacePanel({ products = [], auditReport = null }: Wo
       });
 
       setStatus('sheets', `Exported to Sheet! ID: ${spreadsheetId}`);
+      setLastSyncTime(new Date());
     } catch (e: any) {
       setStatus('sheets', `Error: ${e.message}`);
     }
@@ -249,15 +252,25 @@ export default function WorkspacePanel({ products = [], auditReport = null }: Wo
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Sheets */}
-        <div className="p-4 border border-slate-200 rounded-lg">
-          <div className="flex items-center gap-2 mb-3">
-            <FileSpreadsheet className="text-green-600 h-5 w-5" />
-            <span className="font-semibold text-sm">Google Sheets</span>
+        <div className="p-4 border border-slate-200 rounded-lg flex flex-col">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <FileSpreadsheet className="text-green-600 h-5 w-5" />
+              <span className="font-semibold text-sm">Google Sheets</span>
+            </div>
+            {lastSyncTime && (
+              <span className="text-[10px] text-green-600 bg-green-50 px-2 py-0.5 rounded-full font-medium" title={lastSyncTime.toLocaleString()}>
+                Sync: {lastSyncTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
           </div>
-          <button onClick={createSheet} disabled={loading['sheets']} className="w-full mb-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs py-2 rounded font-medium flex items-center justify-center gap-2">
-            {loading['sheets'] && <Loader2 className="h-3 w-3 animate-spin" />} Create Export Sheet
-          </button>
-          {messages['sheets'] && <p className="text-[10px] text-slate-500 mt-2 truncate">{messages['sheets']}</p>}
+          <div className="mt-auto space-y-2">
+            <button onClick={createSheet} disabled={loading['sheets']} className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs py-2 rounded font-medium flex items-center justify-center gap-2 transition-colors">
+              {loading['sheets'] && <Loader2 className="h-3 w-3 animate-spin" />} 
+              {lastSyncTime ? 'Re-run Last Export' : 'Create Export Sheet'}
+            </button>
+            {messages['sheets'] && <p className="text-[10px] text-slate-500 truncate">{messages['sheets']}</p>}
+          </div>
         </div>
 
         {/* Docs */}
@@ -273,15 +286,35 @@ export default function WorkspacePanel({ products = [], auditReport = null }: Wo
         </div>
 
         {/* Gmail */}
-        <div className="p-4 border border-slate-200 rounded-lg">
-          <div className="flex items-center gap-2 mb-3">
-            <Mail className="text-red-500 h-5 w-5" />
-            <span className="font-semibold text-sm">Gmail</span>
+        <div className="p-4 border border-slate-200 rounded-lg flex flex-col">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Mail className="text-red-500 h-5 w-5" />
+              <span className="font-semibold text-sm">Gmail</span>
+            </div>
           </div>
-          <button onClick={sendEmail} disabled={loading['gmail']} className="w-full mb-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs py-2 rounded font-medium flex items-center justify-center gap-2">
-            {loading['gmail'] && <Loader2 className="h-3 w-3 animate-spin" />} Send Alert Email
-          </button>
-          {messages['gmail'] && <p className="text-[10px] text-slate-500 mt-2 truncate">{messages['gmail']}</p>}
+          
+          <div className="mb-4 flex items-center justify-between">
+            <label className="text-xs text-slate-700 cursor-pointer flex-1">
+              Automated reorder alerts
+            </label>
+            <div className="relative inline-block w-8 h-4 ml-2">
+              <input 
+                type="checkbox" 
+                className="peer appearance-none w-8 h-4 bg-slate-300 rounded-full checked:bg-green-500 cursor-pointer transition-colors"
+                checked={emailAlertsEnabled}
+                onChange={(e) => setEmailAlertsEnabled(e.target.checked)}
+              />
+              <span className="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full peer-checked:translate-x-4 transition-transform pointer-events-none"></span>
+            </div>
+          </div>
+
+          <div className="mt-auto space-y-2">
+            <button onClick={sendEmail} disabled={loading['gmail']} className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs py-2 rounded font-medium flex items-center justify-center gap-2 transition-colors">
+              {loading['gmail'] && <Loader2 className="h-3 w-3 animate-spin" />} Send Test Email
+            </button>
+            {messages['gmail'] && <p className="text-[10px] text-slate-500 truncate">{messages['gmail']}</p>}
+          </div>
         </div>
 
         {/* Forms */}

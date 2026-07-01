@@ -6,7 +6,7 @@
 import React from "react";
 import { Database, Home, Info, Archive } from "lucide-react";
 import { Warehouse, InventoryStats, Transaction, Product } from "../types";
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts';
 
 interface WarehouseGraphsProps {
   warehouses: Warehouse[];
@@ -27,49 +27,50 @@ export default function WarehouseGraphs({ warehouses, stats, transactions, produ
     return { bar: "bg-indigo-600", text: "text-slate-600" };
   };
 
-  // Find top 10 most frequent items
-  const itemFreq: Record<string, number> = {};
-  transactions.forEach(t => {
-    itemFreq[t.productName] = (itemFreq[t.productName] || 0) + 1;
-  });
-  const top10 = Object.keys(itemFreq).sort((a, b) => itemFreq[b] - itemFreq[a]).slice(0, 10);
+  // Calculate total inventory over time based on transactions
+  const currentTotal = products.reduce((sum, p) => sum + p.currentLevel, 0);
+  const sortedTransactions = [...transactions].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   
-  // Create chart data based on transaction volume trend
-  const chartData = transactions.slice(-50).map(t => {
-    const time = new Date(t.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const point: any = { time };
-    if (top10.includes(t.productName)) {
-      point[t.productName] = t.quantity;
+  const inventoryLevelData = [{ time: "Now", total: currentTotal }];
+  let runningTotal = currentTotal;
+
+  sortedTransactions.slice(0, 50).forEach(t => {
+    if (t.type === 'IN' || t.type === 'ADJUST_UP') {
+      runningTotal -= t.quantity;
+    } else if (t.type === 'OUT' || t.type === 'ADJUST_DOWN') {
+      runningTotal += t.quantity;
     }
-    return point;
+    
+    inventoryLevelData.unshift({
+      time: new Date(t.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      total: runningTotal
+    });
   });
   
   const colors = ["#4f46e5", "#06b6d4", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#3b82f6", "#14b8a6", "#f97316"];
 
   return (
     <div className="flex flex-col gap-8 mb-8">
-      {/* PANEL 3: Top 10 Trend */}
+      {/* PANEL 3: Total Inventory Trend */}
       <div id="historical-trend-panel" className="bg-white rounded-xl border border-slate-200/85 p-6 shadow-xs h-96 flex flex-col">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-base font-bold text-slate-900">Historical Trend (Top 10 Activity)</h3>
-            <p className="text-xs text-slate-500">Transaction volume trend for most active SKUs</p>
+            <h3 className="text-base font-bold text-slate-900">Inventory Level Over Time</h3>
+            <p className="text-xs text-slate-500">Cumulative total stock across all active hubs</p>
           </div>
         </div>
         <div className="flex-1 min-h-0">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData}>
+            <LineChart data={inventoryLevelData}>
               <XAxis dataKey="time" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
-              <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
+              <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} domain={['auto', 'auto']} />
               <Tooltip 
                 contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 itemStyle={{ fontSize: '12px' }}
                 labelStyle={{ fontSize: '12px', fontWeight: 'bold', color: '#0f172a', marginBottom: '4px' }}
               />
-              {top10.map((item, idx) => (
-                <Area key={item} type="monotone" dataKey={item} stroke={colors[idx]} fill={colors[idx]} fillOpacity={0.1} />
-              ))}
-            </AreaChart>
+              <Line type="monotone" dataKey="total" name="Total Units" stroke="#10b981" strokeWidth={3} dot={false} activeDot={{ r: 6 }} />
+            </LineChart>
           </ResponsiveContainer>
         </div>
       </div>
@@ -128,46 +129,43 @@ export default function WarehouseGraphs({ warehouses, stats, transactions, produ
       </div>
 
       {/* PANEL 2: Distribution by Category */}
-      <div id="category-distribution-panel" className="bg-white rounded-xl border border-slate-200/85 p-6 shadow-xs">
+      <div id="category-distribution-panel" className="bg-white rounded-xl border border-slate-200/85 p-6 shadow-xs flex flex-col">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-base font-bold text-slate-900">Category Allocations</h3>
+            <h3 className="text-base font-bold text-slate-900">Category Distribution</h3>
             <p className="text-xs text-slate-500">Units aggregated by product scope</p>
           </div>
           <Archive className="h-5 w-5 text-indigo-505" />
         </div>
 
         {categories.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-8 text-center bg-slate-50 rounded-lg border border-dashed">
+          <div className="flex flex-col items-center justify-center p-8 text-center bg-slate-50 rounded-lg border border-dashed flex-1">
             <p className="text-xs text-slate-500">No category categories deployed to registries yet.</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {categories.map(cat => {
-              const qty = stats.categoryDistribution[cat];
-              const pctOfMax = Math.round((qty / maxCategoryVol) * 100);
-
-              return (
-                <div key={cat} className="space-y-1.5">
-                  <div className="flex justify-between items-baseline text-xs">
-                    <span className="font-medium text-slate-700">{cat}</span>
-                    <span className="font-bold text-slate-900">{qty} units</span>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 h-2 bg-slate-100 rounded-lg overflow-hidden">
-                      <div 
-                        className="h-full bg-emerald-500/80 rounded-lg transition-all duration-700 ease-out"
-                        style={{ width: `${pctOfMax}%` }}
-                      />
-                    </div>
-                    <span className="text-[10px] font-mono text-slate-400 w-8 text-right">
-                      {pctOfMax}%
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="flex-1 min-h-[250px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={categories.map((cat) => ({ name: cat, value: stats.categoryDistribution[cat] }))}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {categories.map((cat, index) => (
+                    <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  itemStyle={{ fontSize: '12px' }}
+                />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
         )}
 
