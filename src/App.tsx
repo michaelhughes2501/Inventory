@@ -35,6 +35,7 @@ import {
   Transaction, 
   InventoryStats, 
   AuditReport,
+  AuditTrailLog,
   StockStatus,
   TransactionType
 } from "./types";
@@ -44,6 +45,7 @@ import ProductsTable from "./components/ProductsTable";
 import TransactionsTrail from "./components/TransactionsTrail";
 import WorkspacePanel from "./components/WorkspacePanel";
 import Chatbot from "./components/Chatbot";
+import ReportingDashboard from "./components/ReportingDashboard";
 
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -51,7 +53,7 @@ export default function App() {
   // --- AUTH STATE ---
   const [needsAuth, setNeedsAuth] = useState<boolean>(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [userRole, setUserRole] = useState<string>("Staff");
+  const [userRole, setUserRole] = useState<string>("Viewer");
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
 
   // --- CORE SYSTEM STATES ---
@@ -59,6 +61,7 @@ export default function App() {
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditTrailLog[]>([]);
   const [stats, setStats] = useState<InventoryStats>({
     totalSkus: 0,
     totalAssetsValuation: 0,
@@ -69,7 +72,7 @@ export default function App() {
   });
 
   // --- UI STATE / INTERACTIVE VIEWS ---
-  const [activeTab, setActiveTab] = useState<"catalog" | "audit" | "warehouses" | "workspace">("catalog");
+  const [activeTab, setActiveTab] = useState<"catalog" | "audit" | "warehouses" | "workspace" | "reporting">("catalog");
   const [isLive, setIsLive] = useState<boolean>(false);
   const [isSimulationActive, setIsSimulationActive] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
@@ -145,6 +148,7 @@ export default function App() {
       setWarehouses(data.warehouses);
       setSuppliers(data.suppliers);
       setTransactions(data.transactions);
+      setAuditLogs(data.auditLogs || []);
       setStats(data.stats);
       if (data.userRole) setUserRole(data.userRole);
 
@@ -202,6 +206,7 @@ export default function App() {
           const payload = JSON.parse(event.data);
           if (payload.products) setProducts(payload.products);
           if (payload.transactions) setTransactions(payload.transactions);
+          if (payload.auditLogs) setAuditLogs(payload.auditLogs);
           if (payload.stats) setStats(payload.stats);
           if (payload.message) {
             triggerSysMessage(payload.message);
@@ -577,7 +582,7 @@ export default function App() {
             >
               Stock ledger SKUs
             </button>
-            {userRole !== 'Staff' && (
+            {userRole !== 'Viewer' && (
               <button
                 id="tab-audit-btn"
                 onClick={() => setActiveTab("audit")}
@@ -595,6 +600,13 @@ export default function App() {
               Hub Capacity Profiling
             </button>
             <button
+              id="tab-reporting-btn"
+              onClick={() => setActiveTab("reporting")}
+              className={`pb-4 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition duration-200 cursor-pointer ${activeTab === "reporting" ? "border-indigo-600 text-indigo-650" : "border-transparent text-slate-500 hover:text-slate-800"}`}
+            >
+              Reporting & Audit
+            </button>
+            <button
               id="tab-workspace-btn"
               onClick={() => setActiveTab("workspace")}
               className={`pb-4 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition duration-200 cursor-pointer ${activeTab === "workspace" ? "border-indigo-600 text-indigo-650" : "border-transparent text-slate-500 hover:text-slate-800"}`}
@@ -604,7 +616,7 @@ export default function App() {
           </div>
 
           <div className="pb-4">
-            {userRole !== 'Staff' && (
+            {userRole !== 'Viewer' && (
               <button
                 id="open-register-modal-btn"
                 onClick={() => setIsAddModalOpen(true)}
@@ -953,6 +965,15 @@ export default function App() {
 
         {activeTab === "workspace" && (
           <WorkspacePanel products={products} auditReport={auditReport} warehouses={warehouses} />
+        )}
+
+        {activeTab === "reporting" && (
+          <ReportingDashboard 
+            products={products}
+            stats={stats}
+            auditLogs={auditLogs}
+            warehouses={warehouses}
+          />
         )}
 
       </main>

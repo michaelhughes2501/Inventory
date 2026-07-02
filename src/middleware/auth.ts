@@ -21,16 +21,16 @@ export const requireAuth = async (
     const decodedToken = await adminAuth.verifyIdToken(token);
     
     // Fetch role from Firestore
-    let role = 'Staff'; // Default role
+    let role = 'Viewer'; // Default role
     try {
       const userDoc = await adminDb.collection('users').doc(decodedToken.uid).get();
       if (userDoc.exists) {
-        role = userDoc.data()?.role || 'Staff';
+        role = userDoc.data()?.role || 'Viewer';
       } else {
-        // If first user, make them Administrator, else Staff
+        // If first user, make them Admin, else Viewer
         const usersSnapshot = await adminDb.collection('users').limit(1).get();
         if (usersSnapshot.empty) {
-          role = 'Administrator';
+          role = 'Admin';
         }
         await adminDb.collection('users').doc(decodedToken.uid).set({
           email: decodedToken.email,

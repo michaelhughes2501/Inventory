@@ -106,7 +106,7 @@ export default function DashboardStats({ stats, isLive, onToggleSimulation, isSi
           <p className="text-xs text-slate-400 mb-4 h-8 overflow-hidden line-clamp-2">
             Pushes warehouse customer checkouts and cargo landings dynamically.
           </p>
-          {userRole === 'Administrator' && (
+          {userRole === 'Admin' && (
             <button 
               id="toggle-simulator-btn"
               onClick={onToggleSimulation} 

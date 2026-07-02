@@ -17,7 +17,8 @@ import {
   Transaction, 
   InventoryStats, 
   LiveStreamPayload,
-  AuditReport
+  AuditReport,
+  AuditTrailLog
 } from "./src/types";
 import { requireAuth, AuthRequest, requireRole } from "./src/middleware/auth.js";
 import { adminAuth, adminDb } from "./src/lib/firebase-admin.js";
@@ -184,6 +185,8 @@ let transactions: Transaction[] = [
   }
 ];
 
+let auditLogs: AuditTrailLog[] = [];
+
 // Active SSE client connections
 const sseClients = new Set<any>();
 
@@ -193,6 +196,22 @@ let simulationActive = true;
 // ==========================================
 // DATA ENGINE MUTATIONS & HELPERS
 // ==========================================
+
+function logAudit(user: string, action: "CREATE" | "UPDATE" | "DELETE", entityType: "PRODUCT" | "WAREHOUSE" | "SUPPLIER" | "OTHER", entityId: string, details: string) {
+  const log: AuditTrailLog = {
+    id: "audit-" + Math.random().toString(36).substring(2, 11),
+    timestamp: new Date().toISOString(),
+    user,
+    action,
+    entityType,
+    entityId,
+    details
+  };
+  auditLogs.unshift(log);
+  if (auditLogs.length > 500) {
+    auditLogs.pop();
+  }
+}
 
 function updateProductStatus(p: Product): StockStatus {
   if (p.currentLevel <= 0) {
@@ -279,6 +298,8 @@ function pushTransaction(productId: string, type: TransactionType, quantity: num
     transactions.shift();
   }
 
+  logAudit(operator, "UPDATE", "PRODUCT", productId, `${type} ${quantity} units. ${notes}`);
+
   // Write audit log to Firestore
   try {
     adminDb.collection('audit_logs').add({
@@ -302,6 +323,7 @@ function broadcastUpdate(message?: string) {
     products,
     transactions: transactions.slice(-40).reverse(), // newest first
     stats: calculateStats(),
+    auditLogs: auditLogs.slice(0, 100),
     message
   };
 
@@ -340,6 +362,7 @@ app.get("/api/inventory/stream", async (req, res) => {
     products,
     transactions: transactions.slice(-40).reverse(),
     stats: calculateStats(),
+    auditLogs: auditLogs.slice(0, 100),
     message: "Data stream connected to primary Server Storage Layer."
   };
   res.write(`data: ${JSON.stringify(payload)}\n\n`);
@@ -358,13 +381,14 @@ app.get("/api/inventory/data", requireAuth as express.RequestHandler, (req: any,
     suppliers,
     products,
     transactions: transactions.slice(-40).reverse(),
+    auditLogs: auditLogs.slice(0, 100),
     stats: calculateStats(),
-    userRole: req.user?.role || 'Staff'
+    userRole: req.user?.role || 'Viewer'
   });
 });
 
 // Bulk update products
-app.post("/api/inventory/product/bulk-update", requireAuth as express.RequestHandler, requireRole(['Administrator', 'Manager']) as express.RequestHandler, (req, res) => {
+app.post("/api/inventory/product/bulk-update", requireAuth as express.RequestHandler, requireRole(['Admin', 'Editor']) as express.RequestHandler, (req, res) => {
   try {
     const { productIds, updates } = req.body;
     if (!productIds || !Array.isArray(productIds) || !updates) {
@@ -373,12 +397,14 @@ app.post("/api/inventory/product/bulk-update", requireAuth as express.RequestHan
     }
 
     let updatedCount = 0;
+    const operator = (req as any).user?.email || "System";
     for (const id of productIds) {
       const prod = products.find(p => p.id === id);
       if (prod) {
         if (updates.category) prod.category = updates.category;
         prod.lastUpdated = new Date().toISOString();
         updatedCount++;
+        logAudit(operator, "UPDATE", "PRODUCT", id, `Bulk updated category to ${updates.category}`);
       }
     }
     
@@ -393,7 +419,7 @@ app.post("/api/inventory/product/bulk-update", requireAuth as express.RequestHan
 });
 
 // Create product
-app.post("/api/inventory/product", requireAuth as express.RequestHandler, requireRole(['Administrator', 'Manager']) as express.RequestHandler, (req, res) => {
+app.post("/api/inventory/product", requireAuth as express.RequestHandler, requireRole(['Admin', 'Editor']) as express.RequestHandler, (req, res) => {
   try {
     const { sku, name, description, category, currentLevel, reorderPoint, maxStock, cost, sellPrice, warehouseId, supplierId, operator } = req.body;
     
@@ -433,10 +459,36 @@ app.post("/api/inventory/product", requireAuth as express.RequestHandler, requir
     newProd.status = updateProductStatus(newProd);
     products.push(newProd);
 
-    pushTransaction(newProd.id, TransactionType.RECEIVED, nLevel, "Initial SKU entry catalog load.", operator || "System Administrator");
+    const actualOperator = operator || (req as any).user?.email || "System Administrator";
+
+    pushTransaction(newProd.id, TransactionType.RECEIVED, nLevel, "Initial SKU entry catalog load.", actualOperator);
+    logAudit(actualOperator, "CREATE", "PRODUCT", newProd.id, `Created new product ${newProd.sku}`);
     broadcastUpdate(`SKU catalog updated: Created item ${newProd.sku} in ${warehouses.find(w => w.id === warehouseId)?.name}.`);
 
     res.status(201).json(newProd);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete product
+app.delete("/api/inventory/product/:id", requireAuth as express.RequestHandler, requireRole(['Admin', 'Editor']) as express.RequestHandler, (req, res) => {
+  try {
+    const productId = req.params.id;
+    const prodIndex = products.findIndex(p => p.id === productId);
+    if (prodIndex === -1) {
+      res.status(404).json({ error: "Product not found" });
+      return;
+    }
+    
+    const sku = products[prodIndex].sku;
+    products.splice(prodIndex, 1);
+    
+    const actualOperator = (req as any).user?.email || "System Administrator";
+    logAudit(actualOperator, "DELETE", "PRODUCT", productId, `Deleted product ${sku}`);
+    broadcastUpdate(`Product ${sku} was deleted from catalog.`);
+    
+    res.json({ message: "Product deleted" });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -486,7 +538,7 @@ app.post("/api/inventory/transaction", requireAuth as express.RequestHandler, (r
 });
 
 // Transfer stock between warehouses
-app.post("/api/inventory/transfer", requireAuth as express.RequestHandler, requireRole(['Administrator', 'Manager']) as express.RequestHandler, (req, res) => {
+app.post("/api/inventory/transfer", requireAuth as express.RequestHandler, requireRole(['Admin', 'Editor']) as express.RequestHandler, (req, res) => {
   try {
     const { productId, fromWarehouseId, toWarehouseId, quantity, operator, notes } = req.body;
 
@@ -554,7 +606,7 @@ app.post("/api/inventory/transfer", requireAuth as express.RequestHandler, requi
 });
 
 // Restock purchase order simulation
-app.post("/api/inventory/restock-order", requireAuth as express.RequestHandler, requireRole(['Administrator', 'Manager']) as express.RequestHandler, (req, res) => {
+app.post("/api/inventory/restock-order", requireAuth as express.RequestHandler, requireRole(['Admin', 'Editor']) as express.RequestHandler, (req, res) => {
   try {
     const { productId, quantity, operator } = req.body;
     const prod = products.find(p => p.id === productId);
@@ -581,7 +633,7 @@ app.post("/api/inventory/restock-order", requireAuth as express.RequestHandler, 
 });
 
 // Toggle real-time simulation
-app.post("/api/simulation/toggle", requireAuth as express.RequestHandler, requireRole(['Administrator']) as express.RequestHandler, (req, res) => {
+app.post("/api/simulation/toggle", requireAuth as express.RequestHandler, requireRole(['Admin']) as express.RequestHandler, (req, res) => {
   simulationActive = !simulationActive;
   broadcastUpdate(`Simulation environment toggled: ${simulationActive ? "ACTIVE" : "PAUSED"}`);
   res.json({ active: simulationActive });
@@ -611,7 +663,7 @@ function getGenAI(): GoogleGenAI {
 }
 
 // AI Inventory Intelligence Audit Endpoint
-app.post("/api/inventory/audit", requireAuth as express.RequestHandler, requireRole(['Administrator', 'Manager']) as express.RequestHandler, async (req, res) => {
+app.post("/api/inventory/audit", requireAuth as express.RequestHandler, requireRole(['Admin', 'Editor']) as express.RequestHandler, async (req, res) => {
   try {
     const systemPrompt = `You are an expert AI Supply Chain Auditor and Logistics Optimizer. 
 You will examine the provided inventory raw data, warehouse utilization profiles, supplier catalogs, and recent stock transactions.

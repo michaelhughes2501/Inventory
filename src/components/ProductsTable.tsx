@@ -307,7 +307,7 @@ export default function ProductsTable({
             >
               <Plus className="h-3.5 w-3.5" /> Bulk Status Adjust
             </button>
-            {userRole !== 'Staff' && (
+            {userRole !== 'Viewer' && (
               <>
                 <button
                   onClick={() => { setIsBulkCategoryOpen(true); setIsBulkTransferOpen(false); setIsBulkAdjustOpen(false); }}
@@ -555,7 +555,7 @@ export default function ProductsTable({
                           </button>
 
                           {/* Warehouse Relocate */}
-                          {userRole !== 'Staff' && (
+                          {userRole !== 'Viewer' && (
                             <button
                               id={`quick-transfer-${p.sku}`}
                               title="Relocate Stock Hubs"

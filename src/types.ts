@@ -65,6 +65,16 @@ export interface Transaction {
   notes: string;
 }
 
+export interface AuditTrailLog {
+  id: string;
+  timestamp: string;
+  user: string;
+  action: "CREATE" | "UPDATE" | "DELETE";
+  entityType: "PRODUCT" | "WAREHOUSE" | "SUPPLIER" | "OTHER";
+  entityId: string;
+  details: string;
+}
+
 export interface AuditRecommendation {
   id: string;
   sku: string;
@@ -99,5 +109,6 @@ export interface LiveStreamPayload {
   products: Product[];
   transactions: Transaction[];
   stats: InventoryStats;
+  auditLogs: AuditTrailLog[];
   message?: string;
 }
