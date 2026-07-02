@@ -363,6 +363,35 @@ app.get("/api/inventory/data", requireAuth as express.RequestHandler, (req: any,
   });
 });
 
+// Bulk update products
+app.post("/api/inventory/product/bulk-update", requireAuth as express.RequestHandler, requireRole(['Administrator', 'Manager']) as express.RequestHandler, (req, res) => {
+  try {
+    const { productIds, updates } = req.body;
+    if (!productIds || !Array.isArray(productIds) || !updates) {
+      res.status(400).json({ error: "Invalid payload" });
+      return;
+    }
+
+    let updatedCount = 0;
+    for (const id of productIds) {
+      const prod = products.find(p => p.id === id);
+      if (prod) {
+        if (updates.category) prod.category = updates.category;
+        prod.lastUpdated = new Date().toISOString();
+        updatedCount++;
+      }
+    }
+    
+    if (updatedCount > 0) {
+      broadcastUpdate(`Bulk updated ${updatedCount} products.`);
+    }
+
+    res.json({ message: `Updated ${updatedCount} products` });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Create product
 app.post("/api/inventory/product", requireAuth as express.RequestHandler, requireRole(['Administrator', 'Manager']) as express.RequestHandler, (req, res) => {
   try {

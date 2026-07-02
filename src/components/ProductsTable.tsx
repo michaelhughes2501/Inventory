@@ -49,6 +49,10 @@ export default function ProductsTable({
   const [bulkTransferDestWH, setBulkTransferDestWH] = useState("");
   const [bulkTransferQty, setBulkTransferQty] = useState(10);
   const [bulkTransferNote, setBulkTransferNote] = useState("Bulk inter-warehouse transfer");
+
+  const [isBulkCategoryOpen, setIsBulkCategoryOpen] = useState(false);
+  const [bulkCategoryDest, setBulkCategoryDest] = useState("");
+
   const [bulkProcessing, setBulkProcessing] = useState(false);
 
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -86,6 +90,30 @@ export default function ProductsTable({
       onQuickAdjust(id, bulkAdjustType, bulkAdjustQty, bulkAdjustNote);
     });
     setIsBulkAdjustOpen(false);
+    setSelectedProductIds([]);
+  };
+
+  const handleExecuteBulkCategory = async () => {
+    if (!bulkCategoryDest) return;
+    setBulkProcessing(true);
+    const token = await getAccessToken();
+    try {
+      await fetch("/api/inventory/product/bulk-update", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          productIds: selectedProductIds,
+          updates: { category: bulkCategoryDest }
+        })
+      });
+    } catch (err) {
+      console.error("Bulk category error:", err);
+    }
+    setBulkProcessing(false);
+    setIsBulkCategoryOpen(false);
     setSelectedProductIds([]);
   };
 
@@ -274,19 +302,55 @@ export default function ProductsTable({
 
           <div className="flex items-center gap-3 relative">
             <button
-              onClick={() => { setIsBulkAdjustOpen(true); setIsBulkTransferOpen(false); }}
+              onClick={() => { setIsBulkAdjustOpen(true); setIsBulkTransferOpen(false); setIsBulkCategoryOpen(false); }}
               className="text-xs font-bold px-4 py-2 rounded-lg border border-indigo-200 text-indigo-700 bg-white hover:bg-indigo-50 shadow-xs cursor-pointer flex items-center gap-1.5 transition"
             >
               <Plus className="h-3.5 w-3.5" /> Bulk Status Adjust
             </button>
             {userRole !== 'Staff' && (
-              <button
-                onClick={() => { setIsBulkTransferOpen(true); setIsBulkAdjustOpen(false); }}
-                className="text-xs font-bold px-4 py-2 rounded-lg border border-transparent text-white bg-indigo-600 hover:bg-indigo-700 shadow-xs cursor-pointer flex items-center gap-1.5 transition"
-              >
-                <Truck className="h-3.5 w-3.5" /> Bulk Relocate
-              </button>
+              <>
+                <button
+                  onClick={() => { setIsBulkCategoryOpen(true); setIsBulkTransferOpen(false); setIsBulkAdjustOpen(false); }}
+                  className="text-xs font-bold px-4 py-2 rounded-lg border border-transparent text-white bg-indigo-500 hover:bg-indigo-600 shadow-xs cursor-pointer flex items-center gap-1.5 transition"
+                >
+                  <Plus className="h-3.5 w-3.5" /> Category Tag
+                </button>
+                <button
+                  onClick={() => { setIsBulkTransferOpen(true); setIsBulkAdjustOpen(false); setIsBulkCategoryOpen(false); }}
+                  className="text-xs font-bold px-4 py-2 rounded-lg border border-transparent text-white bg-indigo-600 hover:bg-indigo-700 shadow-xs cursor-pointer flex items-center gap-1.5 transition"
+                >
+                  <Truck className="h-3.5 w-3.5" /> Bulk Relocate
+                </button>
+              </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Category Tag Inline Form */}
+      {isBulkCategoryOpen && selectedProductIds.length > 0 && (
+        <div className="bg-slate-50 border-b border-slate-200 p-4 px-6 flex flex-col md:flex-row gap-4 items-end animate-in fade-in zoom-in-95 duration-200">
+          <div className="flex-1">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Select New Category</label>
+            <input
+              type="text"
+              placeholder="e.g. Raw Materials, Assembly, etc."
+              className="w-full text-xs rounded-lg border border-slate-300 p-2.5 bg-white"
+              value={bulkCategoryDest}
+              onChange={e => setBulkCategoryDest(e.target.value)}
+              list="categories-list"
+            />
+            <datalist id="categories-list">
+              {categories.map(c => (
+                <option key={c} value={c} />
+              ))}
+            </datalist>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => setIsBulkCategoryOpen(false)} className="px-4 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">Cancel</button>
+            <button onClick={handleExecuteBulkCategory} disabled={!bulkCategoryDest || bulkProcessing} className="px-4 py-2 text-xs font-bold text-white bg-indigo-500 rounded-lg shadow-sm cursor-pointer hover:bg-indigo-600 disabled:opacity-50">
+              {bulkProcessing ? "Processing..." : "Update Category"}
+            </button>
           </div>
         </div>
       )}
