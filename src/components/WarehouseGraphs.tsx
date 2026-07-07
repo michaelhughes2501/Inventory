@@ -96,13 +96,13 @@ export default function WarehouseGraphs({ warehouses, stats, transactions, produ
                 <div className="flex justify-between items-baseline mb-2">
                   <div className="flex items-center gap-2">
                     <Home className="h-4 w-4 text-slate-400 group-hover:text-indigo-600 transition" />
-                    <span className="text-sm font-semibold text-slate-850">{w.name}</span>
-                    <span className="text-xs text-slate-405">({w.location})</span>
+                    <span className="text-sm font-semibold text-slate-800">{w.name}</span>
+                    <span className="text-xs text-slate-400">({w.location})</span>
                   </div>
                   <div className="text-xs text-right">
                     <span className="font-bold text-slate-900">{utilization.used}</span>
                     <span className="text-slate-400"> / {utilization.total} Units </span>
-                    <span className={`ml-2 px-2 py-0.5 rounded bg-slate-105 ${styleProps.text}`}>
+                    <span className={`ml-2 px-2 py-0.5 rounded bg-slate-100 ${styleProps.text}`}>
                       {utilization.percentage}%
                     </span>
                   </div>
@@ -135,7 +135,7 @@ export default function WarehouseGraphs({ warehouses, stats, transactions, produ
             <h3 className="text-base font-bold text-slate-900">Category Distribution</h3>
             <p className="text-xs text-slate-500">Units aggregated by product scope</p>
           </div>
-          <Archive className="h-5 w-5 text-indigo-505" />
+          <Archive className="h-5 w-5 text-indigo-500" />
         </div>
 
         {categories.length === 0 ? (
@@ -169,7 +169,7 @@ export default function WarehouseGraphs({ warehouses, stats, transactions, produ
           </div>
         )}
 
-        <div className="mt-4 pt-4 border-t border-slate-150 flex justify-around text-center text-xs">
+        <div className="mt-4 pt-4 border-t border-slate-100 flex justify-around text-center text-xs">
           <div>
             <span className="block text-lg font-bold text-slate-900">{categories.length}</span>
             <span className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Categories</span>

@@ -28,7 +28,7 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 // ==========================================
 // 1. DATA LAYER (Authoritative In-Memory Store)
@@ -721,7 +721,7 @@ You MUST respond with a JSON object exactly matching this schema:
 
     const ai = getGenAI();
     const result = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.5-flash",
       contents: `Please perform a comprehensive supply chain and logistics audit on this inventory system:\n\n${JSON.stringify(inventoryRepresentation)}`,
       config: {
         systemInstruction: systemPrompt,
@@ -786,7 +786,7 @@ app.post("/api/chatbot", requireAuth as express.RequestHandler, async (req, res)
     };
 
     const result = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.5-flash",
       contents: message,
       config: {
         systemInstruction: `You are an expert AI inventory assistant. The current inventory status is: ${JSON.stringify(inventoryRepresentation)}. Keep your answers concise and helpful.`

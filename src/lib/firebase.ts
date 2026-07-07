@@ -15,6 +15,10 @@ provider.addScope('https://mail.google.com/');
 provider.addScope('https://www.googleapis.com/auth/spreadsheets');
 provider.addScope('https://www.googleapis.com/auth/chat.spaces');
 provider.addScope('https://www.googleapis.com/auth/chat.messages');
+provider.addScope('https://www.googleapis.com/auth/documents');
+provider.addScope('https://www.googleapis.com/auth/calendar.events');
+provider.addScope('https://www.googleapis.com/auth/meetings.space.created');
+provider.addScope('https://www.googleapis.com/auth/presentations');
 
 let isSigningIn = false;
 let cachedAccessToken: string | null = null;
