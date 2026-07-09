@@ -21,28 +21,28 @@ export default function TransactionsTrail({ transactions, onSelectProductBySku }
         return {
           bullet: "bg-emerald-500 ring-emerald-200",
           text: "text-emerald-700",
-          badge: "bg-emerald-50 text-emerald-850 border-emerald-200",
+          badge: "bg-emerald-50 text-emerald-800 border-emerald-200",
           label: "LANDED"
         };
       case TransactionType.DISPATCHED:
         return {
           bullet: "bg-rose-500 ring-rose-200",
           text: "text-rose-700",
-          badge: "bg-rose-50 text-rose-850 border-rose-200",
+          badge: "bg-rose-50 text-rose-800 border-rose-200",
           label: "DISPATCHED"
         };
       case TransactionType.RELOCATED:
         return {
           bullet: "bg-indigo-500 ring-indigo-200",
           text: "text-indigo-700",
-          badge: "bg-indigo-50 text-indigo-850 border-indigo-200",
+          badge: "bg-indigo-50 text-indigo-800 border-indigo-200",
           label: "TRANSFER"
         };
       case TransactionType.ADJUSTED:
         return {
           bullet: "bg-amber-500 ring-amber-200",
           text: "text-amber-700",
-          badge: "bg-amber-50 text-amber-850 border-amber-250",
+          badge: "bg-amber-50 text-amber-800 border-amber-200",
           label: "ADJUSTMENT"
         };
     }
@@ -64,9 +64,9 @@ export default function TransactionsTrail({ transactions, onSelectProductBySku }
           <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
             Real-Time Audit Trail
           </h3>
-          <p className="text-xs text-slate-505">Streaming warehouse operations chronologically</p>
+          <p className="text-xs text-slate-500">Streaming warehouse operations chronologically</p>
         </div>
-        <div className="flex items-center gap-1 text-[10px] font-semibold text-indigo-650 bg-indigo-50 px-2.5 py-1 rounded-full animate-pulse border border-indigo-200/50">
+        <div className="flex items-center gap-1 text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full animate-pulse border border-indigo-200/50">
           <Circle className="h-2 w-2 bg-indigo-500 rounded-full shrink-0" />
           <span>LISTENING</span>
         </div>
@@ -91,7 +91,7 @@ export default function TransactionsTrail({ transactions, onSelectProductBySku }
                   animate={{ opacity: 1, y: 0, height: "auto" }}
                   exit={{ opacity: 0 }}
                   transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                  className="p-3.5 bg-slate-50/60 rounded-xl border border-slate-150 hover:bg-slate-50 hover:shadow-xs transition duration-150 flex items-start gap-3.5 relative overflow-hidden"
+                  className="p-3.5 bg-slate-50/60 rounded-xl border border-slate-100 hover:bg-slate-50 hover:shadow-xs transition duration-150 flex items-start gap-3.5 relative overflow-hidden"
                 >
                   {/* Indicator Dot */}
                   <div className={`mt-1.5 h-2.5 w-2.5 rounded-full shrink-0 ring-4 ${styles.bullet}`} />
@@ -101,7 +101,7 @@ export default function TransactionsTrail({ transactions, onSelectProductBySku }
                     <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
                       <span 
                         onClick={() => onSelectProductBySku(tx.sku)}
-                        className="text-xs font-extrabold text-slate-905 hover:text-indigo-600 hover:underline cursor-pointer truncate"
+                        className="text-xs font-extrabold text-slate-900 hover:text-indigo-600 hover:underline cursor-pointer truncate"
                       >
                         {tx.sku} - {tx.productName}
                       </span>
@@ -119,7 +119,7 @@ export default function TransactionsTrail({ transactions, onSelectProductBySku }
                       </span>
 
                       {/* Quantity */}
-                      <span className="bg-slate-150 text-slate-700 px-2 py-0.5 rounded font-extrabold">
+                      <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-extrabold">
                         Qty: {tx.quantity}
                       </span>
 
@@ -137,7 +137,7 @@ export default function TransactionsTrail({ transactions, onSelectProductBySku }
         </div>
       )}
 
-      <div className="shrink-0 mt-3 p-2.5 bg-slate-100/50 rounded-lg text-[10px] text-slate-500 border border-slate-150 flex items-center gap-1.5">
+      <div className="shrink-0 mt-3 p-2.5 bg-slate-100/50 rounded-lg text-[10px] text-slate-500 border border-slate-100 flex items-center gap-1.5">
         <Info className="h-3.5 w-3.5 text-slate-400 shrink-0" />
         <span>Click on any SKU code above to locate the catalog record instantly.</span>
       </div>

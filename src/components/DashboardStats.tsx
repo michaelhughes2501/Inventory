@@ -27,7 +27,7 @@ export default function DashboardStats({ stats, isLive, onToggleSimulation, isSi
       <div id="stat-assets-card" className="bg-white rounded-xl border border-slate-200/85 p-6 shadow-xs hover:border-slate-300 transition duration-150">
         <div className="flex items-center justify-between mb-4">
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Inventory Asset Capital</span>
-          <div className="p-2.5 bg-emerald-55 text-emerald-650 rounded-lg">
+          <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg">
             <BadgeDollarSign className="h-5 w-5" />
           </div>
         </div>
@@ -61,7 +61,7 @@ export default function DashboardStats({ stats, isLive, onToggleSimulation, isSi
       <div id="stat-low-stock-card" className="bg-white rounded-xl border border-slate-200/85 p-6 shadow-xs hover:border-slate-300 transition duration-150">
         <div className="flex items-center justify-between mb-4">
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Stock Alerts & Depletions</span>
-          <div className="p-2.5 bg-orange-50 text-orange-650 rounded-lg">
+          <div className="p-2.5 bg-orange-50 text-orange-600 rounded-lg">
             <ShieldAlert className="h-5 w-5" />
           </div>
         </div>
@@ -77,7 +77,7 @@ export default function DashboardStats({ stats, isLive, onToggleSimulation, isSi
             {stats.outOfStockCount > 0 ? (
               <>
                 <span className="inline-block h-2 w-2 rounded-full bg-rose-500 animate-pulse"></span>
-                <span className="text-rose-650 font-medium">Critical action recommended</span>
+                <span className="text-rose-600 font-medium">Critical action recommended</span>
               </>
             ) : (
               <>
@@ -110,7 +110,7 @@ export default function DashboardStats({ stats, isLive, onToggleSimulation, isSi
             <button 
               id="toggle-simulator-btn"
               onClick={onToggleSimulation} 
-              className={`w-full py-2 px-3 rounded-lg text-xs font-medium transition duration-150 flex items-center justify-center gap-2 cursor-pointer ${isSimulationActive ? "bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-800" : "bg-cyan-550 hover:bg-cyan-500 text-slate-950 font-bold"}`}
+              className={`w-full py-2 px-3 rounded-lg text-xs font-medium transition duration-150 flex items-center justify-center gap-2 cursor-pointer ${isSimulationActive ? "bg-slate-800 hover:bg-slate-800 text-slate-200 border border-slate-800" : "bg-cyan-500 hover:bg-cyan-500 text-slate-950 font-bold"}`}
             >
               <Activity className="h-3.5 w-3.5" />
               {isSimulationActive ? "Pause Background Orders" : "Resume Live Orders"}

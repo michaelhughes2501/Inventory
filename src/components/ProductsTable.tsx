@@ -159,7 +159,7 @@ export default function ProductsTable({
       case StockStatus.OUT_OF_STOCK:
         return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-rose-50 text-rose-700 border border-rose-200">Depleted</span>;
       case StockStatus.OVERSTOCKED:
-        return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-indigo-55 bg-indigo-50 text-indigo-700 border border-indigo-200">Overstocked</span>;
+        return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">Overstocked</span>;
     }
   };
 
@@ -208,7 +208,7 @@ export default function ProductsTable({
                   id="catalog-search-input"
                   type="text"
                   placeholder="Search SKU, name, profile..."
-                  className="w-64 pl-9 pr-4 py-2 text-xs rounded-lg border border-slate-250 focus:outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-550 transition"
+                  className="w-64 pl-9 pr-4 py-2 text-xs rounded-lg border border-slate-200 focus:outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                 />
@@ -217,7 +217,7 @@ export default function ProductsTable({
               <button
                 onClick={() => setIsScannerOpen(true)}
                 title="Scan Barcode"
-                className="p-2 border border-slate-250 rounded-lg bg-white text-slate-500 hover:text-indigo-600 hover:border-indigo-300 transition"
+                className="p-2 border border-slate-200 rounded-lg bg-white text-slate-500 hover:text-indigo-600 hover:border-indigo-300 transition"
               >
                 <Camera className="w-4 h-4" />
               </button>
@@ -228,7 +228,7 @@ export default function ProductsTable({
               <Filter className="h-3 w-3 text-slate-400" />
               <select
                 id="filter-warehouse-select"
-                className="text-xs bg-white rounded-lg border border-slate-250 p-2 focus:outline-hidden focus:border-indigo-550 focus:ring-1 focus:ring-indigo-500"
+                className="text-xs bg-white rounded-lg border border-slate-200 p-2 focus:outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                 value={selectedWarehouseId}
                 onChange={e => setSelectedWarehouseId(e.target.value)}
               >
@@ -242,7 +242,7 @@ export default function ProductsTable({
             {/* Category Filter */}
             <select
               id="filter-category-select"
-              className="text-xs bg-white rounded-lg border border-slate-250 p-2 focus:outline-hidden"
+              className="text-xs bg-white rounded-lg border border-slate-200 p-2 focus:outline-hidden"
               value={selectedCategory}
               onChange={e => setSelectedCategory(e.target.value)}
             >
@@ -255,7 +255,7 @@ export default function ProductsTable({
             {/* Status Filter */}
             <select
               id="filter-status-select"
-              className="text-xs bg-white rounded-lg border border-slate-250 p-2 focus:outline-hidden"
+              className="text-xs bg-white rounded-lg border border-slate-200 p-2 focus:outline-hidden"
               value={selectedStatus}
               onChange={e => setSelectedStatus(e.target.value)}
             >
@@ -276,7 +276,7 @@ export default function ProductsTable({
                   setSelectedCategory("");
                   setSelectedStatus("");
                 }}
-                className="text-xs text-indigo-600 hover:text-indigo-805 underline font-medium cursor-pointer"
+                className="text-xs text-indigo-600 hover:text-indigo-800 underline font-medium cursor-pointer"
               >
                 Clear
               </button>
@@ -338,9 +338,9 @@ export default function ProductsTable({
               className="w-full text-xs rounded-lg border border-slate-300 p-2.5 bg-white"
               value={bulkCategoryDest}
               onChange={e => setBulkCategoryDest(e.target.value)}
-              list="categories-list"
+              list="categories-list-bulk"
             />
-            <datalist id="categories-list">
+            <datalist id="categories-list-bulk">
               {categories.map(c => (
                 <option key={c} value={c} />
               ))}
@@ -497,7 +497,7 @@ export default function ProductsTable({
                       </td>
 
                       {/* SKU Code */}
-                      <td className="py-4 px-6 font-mono text-xs font-bold text-slate-805 select-all" onClick={() => onSelectProduct(p)}>
+                      <td className="py-4 px-6 font-mono text-xs font-bold text-slate-800 select-all" onClick={() => onSelectProduct(p)}>
                         {p.sku}
                       </td>
 
@@ -526,7 +526,7 @@ export default function ProductsTable({
 
                       {/* Valuation */}
                       <td className="py-4 px-6 text-xs text-slate-700" onClick={() => onSelectProduct(p)}>
-                        <p className="font-semibold text-slate-850">{valFormatted}</p>
+                        <p className="font-semibold text-slate-800">{valFormatted}</p>
                         <p className="text-[9px] text-slate-400">Cost: ${p.cost} | Wholesale: ${p.sellPrice}</p>
                       </td>
 
@@ -549,7 +549,7 @@ export default function ProductsTable({
                             id={`quick-adjust-toggle-${p.sku}`}
                             title="Quick Adjust Unit Stocks"
                             onClick={() => setAdjustingProductId(isQuickPanelOpen ? null : p.id)}
-                            className="p-1.5 rounded-lg border border-slate-205 text-slate-600 hover:bg-slate-100 hover:text-slate-900 cursor-pointer"
+                            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 cursor-pointer"
                           >
                             <span>Adjust</span>
                           </button>
@@ -578,14 +578,14 @@ export default function ProductsTable({
                               <span className="text-xs font-semibold text-indigo-900">Rapid Stock Audit:</span>
                               <input
                                 type="number"
-                                className="w-16 bg-white border border-slate-250 rounded py-1 px-1.5 text-xs focus:outline-hidden font-bold"
+                                className="w-16 bg-white border border-slate-200 rounded py-1 px-1.5 text-xs focus:outline-hidden font-bold"
                                 value={adjustQty}
                                 onChange={e => setAdjustQty(Math.max(1, Number(e.target.value)))}
                               />
                               <input
                                 type="text"
                                 placeholder="Adjustment comments (optional)..."
-                                className="w-64 bg-white border border-slate-250 rounded py-1 px-2.5 text-xs focus:outline-hidden"
+                                className="w-64 bg-white border border-slate-200 rounded py-1 px-2.5 text-xs focus:outline-hidden"
                                 value={adjustNote}
                                 onChange={e => setAdjustNote(e.target.value)}
                               />

@@ -527,14 +527,24 @@ export default function App() {
 
           {/* User Console Preferences */}
           <div className="flex items-center gap-3 self-end sm:self-auto">
+            <button
+              id="refresh-sync-btn"
+              onClick={fetchCentralData}
+              disabled={isRefreshing}
+              className="p-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition cursor-pointer"
+              title="Recalculate Storage Valuation & Pull Data"
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin text-indigo-500" : ""}`} />
+            </button>
+
             <div className="flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Operator:</span>
               <span className="text-xs font-semibold text-slate-800 w-28 text-center truncate">
                 {currentUser?.displayName || currentUser?.email || "Operator"}
               </span>
             </div>
-            
-            <button 
+
+            <button
               onClick={async () => {
                 await logout();
                 setNeedsAuth(true);
@@ -543,18 +553,6 @@ export default function App() {
               title="Sign out"
             >
               <LogOut className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="flex gap-2">
-            <button 
-              id="refresh-sync-btn"
-              onClick={fetchCentralData}
-              disabled={isRefreshing}
-              className="p-2 rounded-lg bg-white border border-slate-250 text-slate-605 hover:bg-slate-50 hover:text-indigo-600 transition cursor-pointer self-center"
-              title="Recalculate Storage Valuation & Pull Data"
-            >
-              <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin text-indigo-500" : ""}`} />
             </button>
           </div>
         </div>
@@ -578,7 +576,7 @@ export default function App() {
             <button
               id="tab-catalog-btn"
               onClick={() => setActiveTab("catalog")}
-              className={`pb-4 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition duration-200 cursor-pointer ${activeTab === "catalog" ? "border-indigo-600 text-indigo-650" : "border-transparent text-slate-500 hover:text-slate-800"}`}
+              className={`pb-4 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition duration-200 cursor-pointer ${activeTab === "catalog" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-800"}`}
             >
               Stock ledger SKUs
             </button>
@@ -586,7 +584,7 @@ export default function App() {
               <button
                 id="tab-audit-btn"
                 onClick={() => setActiveTab("audit")}
-                className={`pb-4 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition duration-200 cursor-pointer flex items-center gap-1.5 ${activeTab === "audit" ? "border-indigo-600 text-indigo-650" : "border-transparent text-slate-500 hover:text-slate-800"}`}
+                className={`pb-4 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition duration-200 cursor-pointer flex items-center gap-1.5 ${activeTab === "audit" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-800"}`}
               >
                 <BrainCircuit className="h-3.5 w-3.5" />
                 AI Procure Intelligence
@@ -595,21 +593,21 @@ export default function App() {
             <button
               id="tab-warehouses-btn"
               onClick={() => setActiveTab("warehouses")}
-              className={`pb-4 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition duration-200 cursor-pointer ${activeTab === "warehouses" ? "border-indigo-600 text-indigo-650" : "border-transparent text-slate-500 hover:text-slate-800"}`}
+              className={`pb-4 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition duration-200 cursor-pointer ${activeTab === "warehouses" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-800"}`}
             >
               Hub Capacity Profiling
             </button>
             <button
               id="tab-reporting-btn"
               onClick={() => setActiveTab("reporting")}
-              className={`pb-4 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition duration-200 cursor-pointer ${activeTab === "reporting" ? "border-indigo-600 text-indigo-650" : "border-transparent text-slate-500 hover:text-slate-800"}`}
+              className={`pb-4 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition duration-200 cursor-pointer ${activeTab === "reporting" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-800"}`}
             >
               Reporting & Audit
             </button>
             <button
               id="tab-workspace-btn"
               onClick={() => setActiveTab("workspace")}
-              className={`pb-4 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition duration-200 cursor-pointer ${activeTab === "workspace" ? "border-indigo-600 text-indigo-650" : "border-transparent text-slate-500 hover:text-slate-800"}`}
+              className={`pb-4 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition duration-200 cursor-pointer ${activeTab === "workspace" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-800"}`}
             >
               Workspace Integrations
             </button>
@@ -652,7 +650,7 @@ export default function App() {
               {/* Product detailed parameters inspector panel if one is selected */}
               {selectedProduct ? (
                 <div id="product-inspector-panel" className="bg-white rounded-xl border border-indigo-200 p-6 shadow-xs relative overflow-hidden transition-all">
-                  <div className="absolute top-0 right-0 py-1.5 px-3 bg-indigo-50 text-indigo-805 text-[9px] font-extrabold uppercase tracking-wider rounded-bl border-l border-b border-indigo-100">
+                  <div className="absolute top-0 right-0 py-1.5 px-3 bg-indigo-50 text-indigo-800 text-[9px] font-extrabold uppercase tracking-wider rounded-bl border-l border-b border-indigo-100">
                     ITEM PROFILE
                   </div>
 
@@ -716,8 +714,8 @@ export default function App() {
                       const sup = suppliers.find(s => s.id === selectedProduct.supplierId);
                       if (!sup) return <span className="text-xs text-slate-500">Unassigned Supplier</span>;
                       return (
-                        <div className="text-[11px] text-slate-705">
-                          <p className="font-bold text-slate-850">{sup.name}</p>
+                        <div className="text-[11px] text-slate-700">
+                          <p className="font-bold text-slate-800">{sup.name}</p>
                           <p className="text-[10px] text-slate-400 mt-0.5">Contact: {sup.contact}</p>
                           <div className="flex gap-2 items-center mt-1 text-[10px]">
                             <span className="bg-white border rounded px-1.5 font-bold">Lead: {sup.leadTimeDays} days</span>
@@ -735,7 +733,7 @@ export default function App() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => setShowQRModal(true)}
-                      className="flex-1 bg-white hover:bg-slate-100 border border-slate-300 text-slate-750 font-bold py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1 cursor-pointer transition-all"
+                      className="flex-1 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-bold py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1 cursor-pointer transition-all"
                     >
                       <Layers className="h-3.5 w-3.5 text-slate-400" />
                       <span>Print QR Code</span>
@@ -744,7 +742,7 @@ export default function App() {
                     <button
                       id="inspector-relocate-btn"
                       onClick={() => openTransferModal(selectedProduct)}
-                      className="flex-1 bg-white hover:bg-slate-100 border border-slate-300 text-slate-750 font-bold py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1 cursor-pointer transition-all"
+                      className="flex-1 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-bold py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1 cursor-pointer transition-all"
                     >
                       <ArrowLeftRight className="h-3.5 w-3.5 text-slate-400" />
                       <span>Transship Hub</span>
@@ -761,10 +759,10 @@ export default function App() {
                   </div>
                 </div>
               ) : (
-                <div className="bg-white rounded-xl border border-slate-205 border-dashed p-8 text-center text-slate-400 h-44 flex flex-col justify-center items-center">
+                <div className="bg-white rounded-xl border border-slate-200 border-dashed p-8 text-center text-slate-400 h-44 flex flex-col justify-center items-center">
                   <Database className="h-10 w-10 text-slate-300 mb-2" />
                   <p className="text-xs font-semibold leading-relaxed">No selected product catalog inspected.</p>
-                  <p className="text-[10px] text-slate-405">Highlight any row on the stock list table to view metadata parameterizations.</p>
+                  <p className="text-[10px] text-slate-400">Highlight any row on the stock list table to view metadata parameterizations.</p>
                 </div>
               )}
 
@@ -782,8 +780,8 @@ export default function App() {
           <div className="bg-white rounded-xl border border-slate-200/85 p-6 shadow-xs">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-5 mb-6">
               <div>
-                <h3 className="text-base font-extrabold text-slate-905 flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-indigo-600 fill-indigo-150 animate-bounce" />
+                <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-indigo-600 fill-indigo-100 animate-bounce" />
                   AI Procurement Intelligence Hub
                 </h3>
                 <p className="text-xs text-slate-500">Real-time supply forecasting audit compiled by Gemini</p>
@@ -825,7 +823,7 @@ export default function App() {
                     <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Procurement Scorecard</span>
                     <div className="my-3">
                       <span className="text-6xl font-black text-cyan-400">{auditReport.score}</span>
-                      <span className="text-slate-450 text-sm"> /100</span>
+                      <span className="text-slate-400 text-sm"> /100</span>
                     </div>
                     <span className="text-[10px] text-slate-400 leading-relaxed font-semibold">
                       Weighted stocking thresholds evaluation acrossAustin, Boston, and Chicago depots.
@@ -841,7 +839,7 @@ export default function App() {
                     </div>
 
                     <div className="mt-3 pt-3 border-t border-indigo-200/40 flex gap-2 items-center text-[11px] text-indigo-900">
-                      <Coins className="h-4 w-4 text-indigo-750 shrink-0" />
+                      <Coins className="h-4 w-4 text-indigo-700 shrink-0" />
                       <span className="font-bold">Procurement Insight:</span>
                       <span className="font-semibold italic">{auditReport.savingsInsight}</span>
                     </div>
@@ -850,7 +848,7 @@ export default function App() {
 
                 {/* Recommendations Ledger list */}
                 <div>
-                  <h4 className="text-xs font-extrabold uppercase tracking-widest text-slate-550 mb-3.5">Actionable Purchase Guidelines</h4>
+                  <h4 className="text-xs font-extrabold uppercase tracking-widest text-slate-500 mb-3.5">Actionable Purchase Guidelines</h4>
                   
                   {auditReport.recommendations && auditReport.recommendations.length === 0 ? (
                     <div className="p-8 text-center bg-slate-50 border border-dashed rounded-lg text-slate-500 text-xs font-semibold flex items-center justify-center gap-2">
@@ -871,7 +869,7 @@ export default function App() {
                             key={rec.id} 
                             className={`p-4 rounded-xl border transition duration-150 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
                               rec.urgency === "CRITICAL" ? "bg-rose-50/40 border-rose-200 text-rose-950 hover:bg-rose-50" :
-                              rec.urgency === "RECOMMENDED" ? "bg-amber-50/20 border-amber-250 text-slate-900 hover:bg-amber-50/40" :
+                              rec.urgency === "RECOMMENDED" ? "bg-amber-50/20 border-amber-200 text-slate-900 hover:bg-amber-50/40" :
                               "bg-slate-50/60 border-slate-200 hover:bg-slate-50"
                             }`}
                           >
@@ -885,7 +883,7 @@ export default function App() {
                                 <span className={`px-2 py-0.5 text-[9px] font-extrabold rounded-full border ${
                                   rec.urgency === "CRITICAL" ? "bg-rose-100 text-rose-700 border-rose-200 text-[10px] animate-pulse" :
                                   rec.urgency === "RECOMMENDED" ? "bg-amber-100 text-amber-700 border-amber-200" :
-                                  "bg-slate-100 text-slate-505 border-slate-250"
+                                  "bg-slate-100 text-slate-500 border-slate-200"
                                 }`}>
                                   {rec.urgency}
                                 </span>
@@ -912,7 +910,7 @@ export default function App() {
                             </div>
 
                             {/* Purchase Trigger Tool */}
-                            <div className="shrink-0 flex items-center justify-between sm:justify-end sm:flex-col items-end gap-2.5 pt-3 sm:pt-0 border-t sm:border-transparent border-slate-250/20">
+                            <div className="shrink-0 flex items-center justify-between sm:justify-end sm:flex-col items-end gap-2.5 pt-3 sm:pt-0 border-t sm:border-transparent border-slate-200/20">
                               {rec.recommendedOrder > 0 ? (
                                 <>
                                   <div className="text-left sm:text-right">
@@ -924,14 +922,14 @@ export default function App() {
                                     id={`procure-audit-btn-${rec.sku}`}
                                     onClick={() => handleRestockOrder(rec.id, rec.sku, rec.recommendedOrder)}
                                     disabled={isProcessing}
-                                    className="bg-indigo-605 hover:bg-indigo-705 text-white disabled:bg-slate-300 font-bold text-xs py-2 px-4 rounded-lg flex items-center gap-1 shadow-xs cursor-pointer hover:shadow-md transition"
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white disabled:bg-slate-300 font-bold text-xs py-2 px-4 rounded-lg flex items-center gap-1 shadow-xs cursor-pointer hover:shadow-md transition"
                                   >
                                     <Truck className="h-3.5 w-3.5 shrink-0" />
                                     <span>{isProcessing ? "Ordering..." : "Approve Purchase"}</span>
                                   </button>
                                 </>
                               ) : (
-                                <span className="text-xs text-slate-400 font-bold italic flex items-center gap-1.5 bg-slate-105 border py-1.5 px-3 rounded-lg">
+                                <span className="text-xs text-slate-400 font-bold italic flex items-center gap-1.5 bg-slate-100 border py-1.5 px-3 rounded-lg">
                                   <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                                   Holding Healthy Level
                                 </span>
@@ -979,7 +977,7 @@ export default function App() {
       </main>
 
       {/* FOOTER METRICS SYSTEM */}
-      <footer className="bg-white border-t border-slate-205 mt-20 py-8 text-xs text-slate-400">
+      <footer className="bg-white border-t border-slate-200 mt-20 py-8 text-xs text-slate-400">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Layers className="h-4 w-4 text-indigo-600" />
@@ -1030,7 +1028,7 @@ export default function App() {
                     type="text"
                     required
                     placeholder="e.g. SKU-XT-800"
-                    className="w-full text-xs font-mono font-bold rounded-lg border border-slate-300 p-2.5 focus:outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-550"
+                    className="w-full text-xs font-mono font-bold rounded-lg border border-slate-300 p-2.5 focus:outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                     value={newSku}
                     onChange={e => setNewSku(e.target.value.toUpperCase())}
                   />
@@ -1075,9 +1073,9 @@ export default function App() {
                     className="w-full text-xs rounded-lg border border-slate-300 p-2.5 focus:outline-hidden"
                     value={newCategory}
                     onChange={e => setNewCategory(e.target.value)}
-                    list="categories-list"
+                    list="categories-list-add"
                   />
-                  <datalist id="categories-list">
+                  <datalist id="categories-list-add">
                     <option value="Sensors & ICs" />
                     <option value="Power Sources" />
                     <option value="Connectors" />
@@ -1110,7 +1108,7 @@ export default function App() {
                     id="new-level-input"
                     type="number"
                     min={0}
-                    className="w-full text-xs rounded-lg border border-slate-305 p-2 font-semibold"
+                    className="w-full text-xs rounded-lg border border-slate-300 p-2 font-semibold"
                     value={newLevel}
                     onChange={e => setNewLevel(Number(e.target.value))}
                   />
@@ -1121,7 +1119,7 @@ export default function App() {
                     id="new-reorder-input"
                     type="number"
                     min={0}
-                    className="w-full text-xs rounded-lg border border-slate-305 p-2"
+                    className="w-full text-xs rounded-lg border border-slate-300 p-2"
                     value={newReorder}
                     onChange={e => setNewReorder(Number(e.target.value))}
                   />
@@ -1132,7 +1130,7 @@ export default function App() {
                     id="new-max-input"
                     type="number"
                     min={0}
-                    className="w-full text-xs rounded-lg border border-slate-305 p-2"
+                    className="w-full text-xs rounded-lg border border-slate-300 p-2"
                     value={newMax}
                     onChange={e => setNewMax(Number(e.target.value))}
                   />
@@ -1142,27 +1140,27 @@ export default function App() {
               {/* Pricing metrics */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wide text-slate-505 mb-1">Cost Basis Price ($ USD) *</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-wide text-slate-500 mb-1">Cost Basis Price ($ USD) *</label>
                   <input
                     id="new-cost-input"
                     type="number"
                     step="0.01"
                     min="0"
                     placeholder="15.00"
-                    className="w-full text-xs rounded-lg border border-slate-305 p-2.5 font-mono"
+                    className="w-full text-xs rounded-lg border border-slate-300 p-2.5 font-mono"
                     value={newCost}
                     onChange={e => setNewCost(Number(e.target.value))}
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wide text-slate-505 mb-1">Wholesale Selling Price ($ USD) *</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-wide text-slate-500 mb-1">Wholesale Selling Price ($ USD) *</label>
                   <input
                     id="new-sell-input"
                     type="number"
                     step="0.01"
                     min="0"
                     placeholder="39.99"
-                    className="w-full text-xs rounded-lg border border-slate-305 p-2.5 font-mono"
+                    className="w-full text-xs rounded-lg border border-slate-300 p-2.5 font-mono"
                     value={newSell}
                     onChange={e => setNewSell(Number(e.target.value))}
                   />
@@ -1189,13 +1187,13 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 text-xs font-semibold hover:bg-slate-100 rounded-lg text-slate-505 cursor-pointer"
+                  className="px-4 py-2 text-xs font-semibold hover:bg-slate-100 rounded-lg text-slate-500 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-indigo-600 hover:bg-indigo-705 text-white text-xs font-bold py-2.5 px-5 rounded-lg shadow-sm cursor-pointer"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2.5 px-5 rounded-lg shadow-sm cursor-pointer"
                 >
                   Confirm Registration
                 </button>
@@ -1223,7 +1221,7 @@ export default function App() {
               </div>
               <button 
                 onClick={() => setIsTransferModalOpen(false)}
-                className="p-1 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-705 cursor-pointer"
+                className="p-1 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1270,7 +1268,7 @@ export default function App() {
                   <select
                     id="transfer-to-select"
                     required
-                    className="w-full text-xs rounded-lg border border-slate-350 p-2.5 focus:outline-hidden bg-white"
+                    className="w-full text-xs rounded-lg border border-slate-300 p-2.5 focus:outline-hidden bg-white"
                     value={transferDestWH}
                     onChange={e => setTransferDestWH(e.target.value)}
                   >
@@ -1284,7 +1282,7 @@ export default function App() {
 
               {/* Relocation volume */}
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-550 mb-1">Transfer Qty Units *</label>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Transfer Qty Units *</label>
                 <div className="flex items-center gap-3">
                   <input
                     id="transfer-qty-input"
@@ -1365,7 +1363,7 @@ export default function App() {
               </div>
               <button 
                 onClick={() => setShowQRModal(false)}
-                className="p-1 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-705 cursor-pointer"
+                className="p-1 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
