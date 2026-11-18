@@ -1,7 +1,9 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, User } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-import firebaseConfig from '../../firebase-applet-config.json';
+import firebaseConfigFromFile from '../../firebase-applet-config.json';
+// The Firebase web API key is read from the environment instead of the committed JSON.
+const firebaseConfig = { ...firebaseConfigFromFile, apiKey: (import.meta as ImportMeta & { env: Record<string, string | undefined> }).env.VITE_FIREBASE_API_KEY };
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
